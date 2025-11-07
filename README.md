@@ -1,4 +1,22 @@
-# Home Assistant Integrace - Kompletní balíček
+# Home Assistant Integrations - Complete Package
+
+![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2024.1+-blue?logo=home-assistant)
+![Python](https://img.shields.io/badge/Python-3.8+-green?logo=python)
+![License](https://img.shields.io/badge/License-MIT-yellow)
+![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey)
+![Stars](https://img.shields.io/github/stars/masserfx/homeassistant-ac-heating-integration?style=social)
+
+**3 integrace pro Home Assistant** s interaktivními instalátory pro Linux, macOS a Windows.
+
+## 🌟 Hlavní vlastnosti
+
+- **229 entit** pro kompletní monitoring a ovládání
+- **Cross-platform instalátory** s automatickou konfigurací
+- **Modbus TCP** integrace pro AC Heating
+- **GoodWe solar** monitoring přes UDP
+- **Spotové ceny elektřiny** z OTE pro ČR
+
+---
 
 Tento projekt obsahuje 3 integrace pro Home Assistant:
 
@@ -22,7 +40,7 @@ Kompletní integrace tepelného čerpadla AC Heating Convert AW14 přes Modbus T
 - **2 ohřívače vody**: TUV 1-2
 
 ### Připojení
-- IP: `192.168.0.166`
+- IP: `192.168.X.X` (IP adresa tvého čerpadla)
 - Port: `502`
 - Protocol: Modbus TCP
 
@@ -39,9 +57,9 @@ custom_components/ac_heating/
 1. Nastavení → Zařízení a služby → Přidat integraci
 2. Vyhledej: "AC Heating Heat Pump"
 3. Zadej:
-   - IP adresa: `192.168.0.166`
+   - IP adresa: IP tvého čerpadla (např. `192.168.1.100`)
    - Port: `502`
-   - Interval: `30` sekund
+   - Interval: `30` sekund (doporučeno)
 
 ### Dostupné entity
 ```
@@ -67,22 +85,23 @@ Monitoring fotovoltaické elektrárny s baterií GoodWe GW10K-ET.
 - Teplotní monitoring
 
 ### Připojení
-- Inverter IP: `192.168.0.198`
-- Model: GW10K-ET
-- SN: 9010KETU218W0609
+- Inverter IP: `192.168.X.X` (automaticky detekováno instalátorem)
+- Model: GW10K-ET (a další GoodWe modely)
+- Protokol: UDP port 8899
 
 ### Instalace
 Bridge script běží na vašem počítači a odesílá data do HA přes REST API.
 
 ```bash
-# Start bridge:
-cd /Users/lhradek/code/HomeAssistant/ac_heating_integration/
+# Instalátor automaticky nastaví bridge
+# Pro manuální spuštění:
 python3 goodwe_bridge.py
 
-# Pro automatický start (systemd):
-sudo cp goodwe-bridge.service /etc/systemd/system/
-sudo systemctl enable goodwe-bridge
-sudo systemctl start goodwe-bridge
+# Pro automatický start:
+# Linux: systemd service
+# macOS: LaunchAgent
+# Windows: Task Scheduler
+# (vše automaticky nakonfigurováno instalátorem)
 ```
 
 ### Dostupné entity
@@ -171,34 +190,35 @@ automation:
 
 ## 🚀 Rychlá instalace (všechny integrace)
 
-### Krok 1: Připojení na Home Assistant
+### Použití instalátoru
+
 ```bash
-ssh hassio@homeassistant.local
-# Heslo: 5164
+# 1. Klonuj repository
+git clone https://github.com/masserfx/homeassistant-ac-heating-integration.git
+cd homeassistant-ac-heating-integration
+
+# 2. Spusť instalátor pro tvou platformu
+cd installers/linux    # nebo macos / windows
+./install.sh           # nebo install.ps1 na Windows
+
+# 3. Instalátor se zeptá na:
+#    - Home Assistant adresu
+#    - SSH přihlašovací údaje
+#    - GoodWe konfiguraci (volitelně)
 ```
 
-### Krok 2: Instalace souborů (už hotovo ✅)
-```bash
-# Všechny 3 integrace jsou již nainstalované v:
-ls /config/custom_components/
-# ac_heating/
-# cz_energy_spot_prices/
-```
+### Po instalaci
 
-### Krok 3: Restart Home Assistant
-Nastavení → Systém → Restartovat
+1. **Restartuj Home Assistant**
+   Nastavení → Systém → Restartovat
 
-### Krok 4: Přidání integrací
-Pro každou integraci:
-1. Nastavení → Zařízení a služby → Přidat integraci
-2. Vyhledej název integrace
-3. Konfiguruj dle pokynů výše
+2. **Přidej integrace**
+   Nastavení → Zařízení a služby → Přidat integraci
+   - AC Heating Heat Pump
+   - Czech Energy Spot Prices
 
-### Krok 5: Start GoodWe bridge (na tvém počítači)
-```bash
-cd /Users/lhradek/code/HomeAssistant/ac_heating_integration/
-python3 goodwe_bridge.py &
-```
+3. **Ověř GoodWe bridge** (pokud instalováno)
+   Senzory se objeví automaticky po startu bridge
 
 ---
 
@@ -218,7 +238,7 @@ python3 goodwe_bridge.py &
 ### Logy
 ```bash
 # Zobraz logy Home Assistant:
-ssh hassio@homeassistant.local
+ssh user@homeassistant.local
 tail -f /config/home-assistant.log | grep -E "ac_heating|goodwe|cz_energy"
 ```
 
@@ -242,8 +262,13 @@ tail -f /config/home-assistant.log | grep -E "ac_heating|goodwe|cz_energy"
 
 ### AC Heating: Nelze se připojit
 ```bash
-# Test Modbus:
-python3 -c "from pymodbus.client import ModbusTcpClient; c = ModbusTcpClient('192.168.0.166', 502); print(c.connect())"
+# Test Modbus připojení:
+python3 -c "from pymodbus.client import ModbusTcpClient; \
+  c = ModbusTcpClient('YOUR_IP', 502); print(c.connect())"
+
+# Zkontroluj dostupnost:
+ping YOUR_HEAT_PUMP_IP
+telnet YOUR_HEAT_PUMP_IP 502
 ```
 
 ### GoodWe: Bridge nepracuje
@@ -264,20 +289,31 @@ curl "https://www.ote-cr.cz/cs/kratkodobe-trhy/elektrina/denni-trh/@@chart-data?
 
 ## 📝 Poznámky
 
-### Home Assistant Access
-- URL: `http://homeassistant.local:8123`
-- SSH: `hassio@homeassistant.local` (heslo: 5164)
-- API Token: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`
+### Požadavky
 
-### Modbus Registry
-- Kompletní dokumentace: `xCC_modbus-2.0.pdf`
-- Holding registers: 0-285
-- Coil registers: 0-86
+**Home Assistant:**
+- Home Assistant Core 2024.1+
+- SSH addon (Advanced SSH nebo Terminal & SSH)
+- API Access token pro GoodWe bridge
+
+**Síťové požadavky:**
+- AC Heating: Modbus TCP port 502
+- GoodWe: UDP port 8899
+- Home Assistant: HTTP port 8123
 
 ### Bezpečnost
-- Všechny služby běží v lokální síti
-- Žádné externí připojení (kromě OTE API pro ceny)
-- Modbus bez autentizace (firewall doporučen)
+
+- ✅ Všechny integrace běží v lokální síti
+- ✅ Žádné externí připojení (kromě OTE API)
+- ⚠️ Modbus TCP bez autentizace - doporučen firewall
+- ✅ SSH připojení s autentizací (heslo nebo klíč)
+
+### Modbus Registry
+
+Kompletní dokumentace registrů:
+- Holding registers: 0-285
+- Coil registers: 0-86
+- Detaily v `xCC_modbus-2.0.pdf`
 
 ---
 
