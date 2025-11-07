@@ -1,0 +1,14 @@
+[Unit]
+Description=GoodWe to Home Assistant Bridge
+After=network.target
+
+[Service]
+Type=simple
+User=lhradek
+WorkingDirectory=/Users/lhradek/code/HomeAssistant/ac_heating_integration
+ExecStart=/usr/bin/python3 /Users/lhradek/code/HomeAssistant/ac_heating_integration/goodwe_bridge.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,22 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "AC Heating Heat Pump",
+        "description": "Nastavte připojení k tepelnému čerpadlu AC Heating",
+        "data": {
+          "host": "IP adresa",
+          "port": "Port",
+          "scan_interval": "Interval aktualizace (sekundy)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Nepodařilo se připojit k tepelnému čerpadlu",
+      "unknown": "Neočekávaná chyba"
+    },
+    "abort": {
+      "already_configured": "Toto zařízení je již nakonfigurováno"
+    }
+  }
+}
